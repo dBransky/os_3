@@ -37,14 +37,14 @@ void *exe_job(QHandle req_queue)
 pthread_t *init_threads(int threads, QHandle req_queue)
 {
     pthread_t status;
-    pthread_t *theread_tbl = malloc(threads * sizeof(int));
+    pthread_t *thread_tbl = malloc(threads * sizeof(int));
     for (int i = 0; i < threads; i++)
     {
         pthread_t thread;
         status = pthread_create(&thread, NULL, exe_job, req_queue);
-        theread_tbl[i] = thread;
+        thread_tbl[i] = thread;
     }
-    return theread_tbl;
+    return thread_tbl;
 }
 int main(int argc, char *argv[])
 {
