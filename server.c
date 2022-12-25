@@ -25,21 +25,24 @@ void getargs(int *port, int *threads, int *queue_size, int argc, char *argv[])
     *queue_size = atoi(argv[3]);
 }
 void *exe_job(QHandle req_queue)
-{   
-    printf("created thread\n");
-    int connfd = dequeue(req_queue);
-    requestHandle(connfd);
-    Close(connfd);
-    free_queue(req_queue);
+{
+    while (1)
+    {
+        int connfd = dequeue(req_queue);
+        requestHandle(connfd);
+        Close(connfd);
+    }
 }
 
-pthread_t* init_threads(int threads,QHandle req_queue)
-{   pthread_t status;
-    pthread_t* theread_tbl=malloc(threads*sizeof(int));
+pthread_t *init_threads(int threads, QHandle req_queue)
+{
+    pthread_t status;
+    pthread_t *theread_tbl = malloc(threads * sizeof(int));
     for (int i = 0; i < threads; i++)
-    {   pthread_t thread;
-        status=pthread_create(&thread,NULL,exe_job,req_queue);
-        theread_tbl[i]=thread;
+    {
+        pthread_t thread;
+        status = pthread_create(&thread, NULL, exe_job, req_queue);
+        theread_tbl[i] = thread;
     }
     return theread_tbl;
 }
@@ -47,25 +50,26 @@ int main(int argc, char *argv[])
 {
     int listenfd, connfd, port, clientlen, threads, queue_size;
     struct sockaddr_in clientaddr;
-    char *schedalg=argv[4];
+    char *schedalg = argv[4];
     getargs(&port, &threads, &queue_size, argc, argv);
     QHandle req_queue = create_queue(queue_size);
     pthread_t *thread_tbl;
-    thread_tbl=init_threads(threads,req_queue);
+    thread_tbl = init_threads(threads, req_queue);
 
     //
     // HW3: Create some threads...
     //
 
     listenfd = Open_listenfd(port);
-    clientlen = sizeof(clientaddr);
-    connfd = Accept(listenfd, (SA *)&clientaddr, (socklen_t *)&clientlen);
-    enqueue(req_queue, connfd);
-    pthread_join(thread_tbl[0],NULL);
-        //
-        // HW3: In general, don't handle the request in the main thread.
-        // Save the relevant info in a buffer and have one of the worker threads
-        // do the work.
-        //
-
+    while (1)
+    {
+        clientlen = sizeof(clientaddr);
+        connfd = Accept(listenfd, (SA *)&clientaddr, (socklen_t *)&clientlen);
+        enqueue(req_queue, connfd);
+    }
+    //
+    // HW3: In general, don't handle the request in the main thread.
+    // Save the relevant info in a buffer and have one of the worker threads
+    // do the work.
+    //
 }
