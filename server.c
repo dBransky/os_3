@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
     struct sockaddr_in clientaddr;
     char *schedalg = argv[4];
     getargs(&port, &threads, &queue_size, argc, argv);
-    QHandle req_queue = create_queue(queue_size);
+    QHandle req_queue = create_queue(queue_size,schedalg);
     pthread_t *thread_tbl;
     thread_tbl = init_threads(threads, req_queue);
 
