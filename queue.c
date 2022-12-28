@@ -68,7 +68,7 @@ void enqueue(QHandle obj, int item)
     {
         if (strcmp("block", obj->schedalg) == 0)
         {
-            while ((obj->queue_size) == obj->max_size)
+            while (obj->queue_size+obj->current_reqs == obj->max_size)
             {
                 printf("master theread wating\n");
                 pthread_cond_wait(&(obj->not_full), &(obj->lock));
