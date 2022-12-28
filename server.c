@@ -30,6 +30,7 @@ void *exe_job(QHandle req_queue)
     {
         int connfd = dequeue(req_queue);
         requestHandle(connfd);
+        dec_current_reqs(req_queue);
         Close(connfd);
     }
 }

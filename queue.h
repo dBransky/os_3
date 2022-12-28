@@ -8,6 +8,7 @@ typedef struct Queue
     pthread_mutex_t lock;
     int queue_size;
     int max_size;
+    int current_reqs;
     int *items;
     char* schedalg;
 
@@ -17,3 +18,4 @@ QHandle create_queue(int max_size,char* schedalg);
 void enqueue(QHandle,int);
 int dequeue(QHandle);
 void free_queue(QHandle);
+void dec_current_reqs(QHandle);

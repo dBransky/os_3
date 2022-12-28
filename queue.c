@@ -55,6 +55,7 @@ QHandle create_queue(int max_size, char *schedalg)
     strcpy(obj->schedalg, schedalg);
     obj->max_size = max_size;
     obj->queue_size = 0;
+    obj->current_reqs = 0;
     int cond_status = pthread_cond_init(&(obj->not_empty), NULL);
     int lock_status = pthread_mutex_init(&(obj->lock), NULL);
     return obj;
@@ -63,7 +64,7 @@ void enqueue(QHandle obj, int item)
 {
     pthread_mutex_lock(&(obj->lock));
     // queue limit here prob return int
-    if (obj->queue_size == obj->max_size)
+    if (obj->queue_size+obj->current_reqs == obj->max_size)
     {
         if (strcmp("block", obj->schedalg) == 0)
         {
@@ -102,10 +103,17 @@ int dequeue(QHandle obj)
         pthread_cond_wait(&(obj->not_empty), &(obj->lock));
     }
     printf("wake up thread\n");
+    (obj->current_reqs)++;
     (obj->queue_size)--;
     int item = (obj->items)[obj->queue_size];
-    pthread_cond_signal(&(obj->not_full));
     pthread_mutex_unlock(&(obj->lock));
     return item;
+}
+void dec_current_reqs(QHandle obj){
+    pthread_mutex_lock(&(obj->lock));
+    (obj->current_reqs)--;
+    pthread_cond_signal(&(obj->not_full));
+    pthread_mutex_unlock(&(obj->lock));
+
 }
 void free_queue(QHandle obj) { free(obj->items), free(obj->schedalg), free(obj); }
