@@ -7,7 +7,6 @@ void print_items(QHandle obj)
 {
     for (int i = 0; i < obj->queue_size; i++)
     {
-        printf("[%d] %d\n", i, obj->items[i]);
     }
 }
 void inset_item(QHandle obj, Request item)
@@ -72,20 +71,20 @@ void enqueue(QHandle obj, Request item)
         {
             while (obj->queue_size+obj->current_reqs == obj->max_size)
             {
-                printf("master theread wating\n");
                 pthread_cond_wait(&(obj->not_full), &(obj->lock));
             }
-            printf("wakeup master thread\n");
         }
         if (strcmp("dt", obj->schedalg) == 0)
         {
             pthread_mutex_unlock(&(obj->lock));
             Close(item.connfd);
-            return -1;
+            return;
         }
         if (strcmp("dh", obj->schedalg) == 0)
         {   
-            Close((obj->items)[obj->queue_size].connfd);
+            printf("dh\n");
+            printf("closing %d\n",((obj->items)[obj->queue_size-1]).connfd);
+            Close(((obj->items)[obj->queue_size-1]).connfd);
             (obj->queue_size)--;
         }
         if (strcmp("random", obj->schedalg) == 0)
@@ -93,7 +92,9 @@ void enqueue(QHandle obj, Request item)
             remove_randoms(obj);
         }
     }
+    printf("inserting %d\n",item.connfd);
     inset_item(obj, item);
+    printf("%d in queue %d handeled\n",obj->queue_size,obj->current_reqs);
     pthread_cond_signal(&(obj->not_empty));
     pthread_mutex_unlock(&(obj->lock));
 }
@@ -102,19 +103,19 @@ Request dequeue(QHandle obj)
     pthread_mutex_lock(&(obj->lock));
     while ((obj->queue_size) == 0)
     {
-        printf("theread wating\n");
         pthread_cond_wait(&(obj->not_empty), &(obj->lock));
     }
-    printf("wake up thread\n");
     (obj->current_reqs)++;
     (obj->queue_size)--;
     Request item = (obj->items)[obj->queue_size];
+    printf("%d in queue %d handeled\n",obj->queue_size,obj->current_reqs);
     pthread_mutex_unlock(&(obj->lock));
     return item;
 }
 void dec_current_reqs(QHandle obj){
     pthread_mutex_lock(&(obj->lock));
     (obj->current_reqs)--;
+    printf("%d in queue %d handeled\n",obj->queue_size,obj->current_reqs);
     pthread_cond_signal(&(obj->not_full));
     pthread_mutex_unlock(&(obj->lock));
 

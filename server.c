@@ -42,6 +42,7 @@ void *exe_job(Args* args)
         gettimeofday(&currrent_time, NULL);
         timersub(&currrent_time,&req.arive_time,&req.dispatch_interval);
         requestHandle(req, thread_tbl);
+        printf("closing %d\n",req.connfd);
         Close(req.connfd);
         dec_current_reqs(req_queue);
     }
