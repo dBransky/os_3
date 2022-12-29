@@ -10,7 +10,7 @@ void print_items(QHandle obj)
         printf("[%d] %d\n", i, obj->items[i]);
     }
 }
-void inset_item(QHandle obj, int item)
+void inset_item(QHandle obj, Request item)
 {
     for (int i = obj->queue_size; i > 0; i--)
     {
@@ -25,17 +25,17 @@ void remove_randoms(QHandle obj)
     while (replaced != (obj->queue_size) / 2)
     {
         int rand_int = rand() % (obj->queue_size);
-        if ((obj->items)[rand_int] != -1)
-        {
-            (obj->items)[rand_int] = -1;
+        if ((obj->items)[rand_int].connfd != -1)
+        {   Request temp_req={-1,-1,-1};
+            (obj->items)[rand_int] = temp_req;
             replaced++;
         }
     }
-    int arr_buff[obj->max_size];
+    Request arr_buff[obj->max_size];
     int buff_size = 0;
     for (int i = 0; i < obj->queue_size; i++)
     {
-        if (obj->items[i] != -1)
+        if (obj->items[i].connfd != -1)
         {
             arr_buff[buff_size] = obj->items[i];
             buff_size++;
@@ -50,7 +50,7 @@ void remove_randoms(QHandle obj)
 QHandle create_queue(int max_size, char *schedalg)
 {
     QHandle obj = malloc(sizeof(struct Queue));
-    obj->items = malloc(max_size * (sizeof(int)));
+    obj->items = malloc(max_size * (sizeof(Request)));
     obj->schedalg = malloc(strlen(schedalg));
     strcpy(obj->schedalg, schedalg);
     obj->max_size = max_size;
@@ -60,7 +60,7 @@ QHandle create_queue(int max_size, char *schedalg)
     int lock_status = pthread_mutex_init(&(obj->lock), NULL);
     return obj;
 }
-void enqueue(QHandle obj, int item)
+void enqueue(QHandle obj, Request item)
 {
     pthread_mutex_lock(&(obj->lock));
     // queue limit here prob return int
@@ -77,7 +77,6 @@ void enqueue(QHandle obj, int item)
         }
         if (strcmp("dt", obj->schedalg) == 0)
         {
-            pthread_cond_signal(&(obj->not_empty));
             pthread_mutex_unlock(&(obj->lock));
             return;
         }
@@ -94,7 +93,7 @@ void enqueue(QHandle obj, int item)
     pthread_cond_signal(&(obj->not_empty));
     pthread_mutex_unlock(&(obj->lock));
 }
-int dequeue(QHandle obj)
+Request dequeue(QHandle obj)
 {
     pthread_mutex_lock(&(obj->lock));
     while ((obj->queue_size) == 0)
@@ -105,7 +104,7 @@ int dequeue(QHandle obj)
     printf("wake up thread\n");
     (obj->current_reqs)++;
     (obj->queue_size)--;
-    int item = (obj->items)[obj->queue_size];
+    Request item = (obj->items)[obj->queue_size];
     pthread_mutex_unlock(&(obj->lock));
     return item;
 }
