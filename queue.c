@@ -16,7 +16,7 @@ void inset_item(QHandle obj, Request item)
     {
         obj->items[i] = obj->items[i - 1];
     }
-    obj->items[0] = item;
+    (obj->items)[0] = item;
     (obj->queue_size)++;
 }
 void remove_randoms(QHandle obj)
@@ -27,6 +27,7 @@ void remove_randoms(QHandle obj)
         int rand_int = rand() % (obj->queue_size);
         if ((obj->items)[rand_int].connfd != -1)
         {   Request temp_req={-1,-1,-1};
+            Close((obj->items)[rand_int].connfd);
             (obj->items)[rand_int] = temp_req;
             replaced++;
         }
@@ -57,6 +58,7 @@ QHandle create_queue(int max_size, char *schedalg)
     obj->queue_size = 0;
     obj->current_reqs = 0;
     int cond_status = pthread_cond_init(&(obj->not_empty), NULL);
+    cond_status = pthread_cond_init(&(obj->not_full), NULL);
     int lock_status = pthread_mutex_init(&(obj->lock), NULL);
     return obj;
 }
@@ -78,11 +80,13 @@ void enqueue(QHandle obj, Request item)
         if (strcmp("dt", obj->schedalg) == 0)
         {
             pthread_mutex_unlock(&(obj->lock));
-            return;
+            Close(item.connfd);
+            return -1;
         }
         if (strcmp("dh", obj->schedalg) == 0)
-        {
-            obj->queue_size--;
+        {   
+            Close((obj->items)[obj->queue_size].connfd);
+            (obj->queue_size)--;
         }
         if (strcmp("random", obj->schedalg) == 0)
         {
