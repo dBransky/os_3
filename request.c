@@ -162,7 +162,7 @@ void requestServeDynamic(Request req, Worker *thread_tbl, char *filename, char *
       Dup2(req.connfd, STDOUT_FILENO);
       Execve(filename, emptylist, environ);
    }
-   WaitPid(pid, NULL, WUNTRACED);
+   WaitPid(pid, NULL, 0);
    printf("%d fnished wait\n", req.handler_thread);
 }
 
