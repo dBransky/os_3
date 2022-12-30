@@ -82,6 +82,11 @@ void enqueue(QHandle obj, Request item)
         }
         if (strcmp("dh", obj->schedalg) == 0)
         {   
+            if(obj->queue_size==0){
+                pthread_mutex_unlock(&(obj->lock));
+                Close(item.connfd);
+                return;
+            }
             printf("dh\n");
             printf("closing %d\n",((obj->items)[obj->queue_size-1]).connfd);
             Close(((obj->items)[obj->queue_size-1]).connfd);
@@ -89,6 +94,11 @@ void enqueue(QHandle obj, Request item)
         }
         if (strcmp("random", obj->schedalg) == 0)
         {
+            if(((obj->queue_size) / 2)==0){
+                pthread_mutex_unlock(&(obj->lock));
+                Close(item.connfd);
+                return;
+            }
             remove_randoms(obj);
         }
     }
