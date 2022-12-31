@@ -152,7 +152,6 @@ void requestServeDynamic(Request req, Worker *thread_tbl, char *filename, char *
    sprintf(buf, "%sStat-Thread-Dynamic:: %d\r\n", buf, thread_tbl[req.handler_thread].dynamic_reqs);
    Rio_writen(req.connfd, buf, strlen(buf));
 
-   printf("%d started wait\n", req.handler_thread);
    pid_t pid = Fork();
    if (pid == 0)
    {
@@ -163,7 +162,6 @@ void requestServeDynamic(Request req, Worker *thread_tbl, char *filename, char *
       Execve(filename, emptylist, environ);
    }
    WaitPid(pid, NULL, 0);
-   printf("%d fnished wait\n", req.handler_thread);
 }
 
 void requestServeStatic(Request req, Worker *thread_tbl, char *filename, int filesize)

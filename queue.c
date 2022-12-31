@@ -21,7 +21,7 @@ void inset_item(QHandle obj, Request item)
 void remove_randoms(QHandle obj)
 {
     int replaced = 0;
-    while (replaced != (obj->queue_size) / 2)
+    while (replaced != (((obj->queue_size)+1) / 2))
     {
         int rand_int = rand() % (obj->queue_size);
         if ((obj->items)[rand_int].connfd != -1)
@@ -41,7 +41,7 @@ void remove_randoms(QHandle obj)
             buff_size++;
         }
     }
-    obj->queue_size = obj->queue_size - (obj->queue_size) / 2;
+    obj->queue_size = obj->queue_size - (((obj->queue_size)+1) / 2);
     for (int i = 0; i < obj->queue_size; i++)
     {
         obj->items[i]=arr_buff[i];
@@ -92,7 +92,7 @@ void enqueue(QHandle obj, Request item)
         }
         if (strcmp("random", obj->schedalg) == 0)
         {
-            if(((obj->queue_size) / 2)==0){
+            if((((obj->queue_size)+1) / 2)==0){
                 pthread_mutex_unlock(&(obj->lock));
                 Close(item.connfd);
                 return;

@@ -42,8 +42,8 @@ void *exe_job(Args* args)
         gettimeofday(&currrent_time, NULL);
         timersub(&currrent_time,&req.arive_time,&req.dispatch_interval);
         requestHandle(req, thread_tbl);
-        Close(req.connfd);
         dec_current_reqs(req_queue);
+        Close(req.connfd);
     }
 }
 
